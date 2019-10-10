@@ -1,0 +1,39 @@
+{
+  "pluginAlias": "Withings Air Quality",
+  "pluginType": "accessory",
+  "singular": false,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "title": "Email address",
+        "description": "The email address used to connect to your my.withings.com account.",
+        "type": "string",
+        "format": "email",
+        "required": true
+      },
+      "password": {
+        "title": "Password",
+        "description": "The password associated to your email my.withings.com account.",
+        "type": "string",
+        "required": true
+      },
+      "mac": {
+        "title": "MAC address",
+        "description": "The MAC address of your smart sale. It can be found where the batteries are located. Please enter this info without any separators.",
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{12}$",
+        "maxLength": 12,
+        "required": true
+      },
+      "coThreshold": {
+        "title": "Carbon dioxide alert threshold",
+        "description": "Will trigger the abnormal level alert if your carbon dioxide level is higher than this value.",
+        "type": "number",
+        "default": 1000,
+        "minimum": 300,
+        "maximum": 100000
+      }
+    }
+  }
+}

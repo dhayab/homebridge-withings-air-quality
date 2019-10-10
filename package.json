@@ -1,0 +1,56 @@
+{
+  "name": "homebridge-withings-air-quality",
+  "version": "0.0.1",
+  "description": "Homebridge plugin to expose air quality data from the Withings WS-50 Smart Body Analyzer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dhayab/homebridge-withings-air-quality"
+  },
+  "bugs": {
+    "url": "https://github.com/dhayab/homebridge-withings-air-quality/issues"
+  },
+  "homepage": "https://github.com/dhayab/homebridge-withings-air-quality",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "npm run -s build && npm run -s start:homebridge",
+    "start:homebridge": "homebridge -D -P ./ -U ./",
+    "dev": "concurrently --kill-others npm:dev:parcel npm:dev:nodemon",
+    "dev:parcel": "parcel src/*.ts --target node --no-source-maps",
+    "dev:nodemon": "nodemon dist/index.ts",
+    "build": "parcel build src/*.ts --target node --no-source-maps"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "withings",
+    "smart body analyzer",
+    "ws-50",
+    "air quality",
+    "carbon dioxide",
+    "temperature",
+    "homekit"
+  ],
+  "author": "Dhaya <https://github.com/dhayab>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0",
+    "homebridge": ">=0.4.0"
+  },
+  "devDependencies": {
+    "@types/superagent": "4.1.3",
+    "concurrently": "5.0.0",
+    "hap-nodejs": "0.5.0",
+    "homebridge": "0.4.50",
+    "nodemon": "1.19.3",
+    "parcel-bundler": "1.12.4",
+    "tslib": "1.10.0",
+    "tslint": "5.20.0",
+    "tslint-eslint-rules": "5.4.0",
+    "typescript": "3.6.4"
+  },
+  "dependencies": {
+    "superagent": "5.1.0"
+  }
+}

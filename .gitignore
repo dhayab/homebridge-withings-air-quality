@@ -1,0 +1,10 @@
+# Directories
+.cache
+accessories
+dist
+node_modules
+persist
+
+# Files
+.env*
+config.json

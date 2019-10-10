@@ -1,0 +1,19 @@
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "AA:BB:CC:DD:EE:FF",
+    "port": 51826,
+    "pin": "012-34-567"
+  },
+  "description": "A sample Homebridge config for Withings Air Quality",
+  "accessories": [
+    {
+      "accessory": "Withings Air Quality",
+      "name": "Bathroom scale",
+      "email": "my.withings@email.com",
+      "password": "myWithingsPassword",
+      "mac": "0ab2c3d4e5f6",
+      "coThreshold": 1000
+    }
+  ]
+}
