@@ -12,7 +12,9 @@
   "homepage": "https://github.com/dhayab/homebridge-withings-air-quality",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "config.sample.json",
+    "config.schema.json"
   ],
   "scripts": {
     "start": "npm run -s build && npm run -s start:homebridge",
