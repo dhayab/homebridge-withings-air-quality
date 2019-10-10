@@ -5,6 +5,11 @@
   "schema": {
     "type": "object",
     "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true
+      },
       "email": {
         "title": "Email address",
         "description": "The email address used to connect to your my.withings.com account.",
