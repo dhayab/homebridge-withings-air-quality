@@ -1,6 +1,6 @@
 # homebridge-withings-air-quality
 
-This plugin retrieves carbon dioxide and temperature levels from a Withings Smart Body Analyzer smart scale and exposes them as Homekit sensors with [Homebridge](https://github.com/nfarina/homebridge).
+This plugin retrieves carbon dioxide and temperature levels from a Withings Smart Body Analyzer smart scale and exposes them as HomeKit sensors with [Homebridge](https://github.com/nfarina/homebridge).
 
 ## Installation
 
@@ -29,10 +29,15 @@ Here is a sample config (you can view [config.sample.json](./config.sample.json)
       "email": "my.withings@email.com",
       "password": "myWithingsPassword",
       "mac": "0ab2c3d4e5f6", // Do not add separators
-      "coThreshold": 1000 // Optional
+      "levels": [
+        350,  // Excellent
+        1000, // Good
+        2500, // Fair
+        5000  // Inferior
+      ]
     }
   ]
 }
 ```
 
-The `coThreshold` parameter is used to trigger an "abnormal level" alert on the carbon dioxide sensor in Homekit. The value is measured in ppm (parts per million). For more information, [check out this page](https://support.withings.com/hc/en-us/articles/201489797-Smart-Body-Analyzer-WS-50-Frequently-asked-questions-about-air-quality-measurements).
+The `levels` parameter is used to control the information displayed on the air quality sensor. The values are measured in ppm (parts per million). Carbon dioxide level higher than the value for "Inferior" will trigger a warning in HomeKit. For more information, [check out this page](https://support.withings.com/hc/en-us/articles/201489797-Smart-Body-Analyzer-WS-50-Frequently-asked-questions-about-air-quality-measurements).

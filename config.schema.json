@@ -31,13 +31,42 @@
         "maxLength": 12,
         "required": true
       },
-      "coThreshold": {
-        "title": "Carbon dioxide alert threshold",
-        "description": "Will trigger the abnormal level alert if your carbon dioxide level is higher than this value.",
-        "type": "number",
-        "default": 1000,
-        "minimum": 300,
-        "maximum": 100000
+      "levels": {
+        "title": "Air quality levels",
+        "type": "array",
+        "minItems": 4,
+        "uniqueItems": true,
+        "items": [
+          {
+            "title": "Excellent",
+            "type": "number",
+            "default": 350,
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          {
+            "title": "Good",
+            "type": "number",
+            "default": 1000,
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          {
+            "title": "Fair",
+            "type": "number",
+            "default": 2500,
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          {
+            "title": "Inferior",
+            "description": "Carbon dioxide levels higher than this value will trigger a warning in HomeKit",
+            "type": "number",
+            "default": 5000,
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        ]
       }
     }
   }

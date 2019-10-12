@@ -4,6 +4,8 @@ import pkg from '../package.json';
 import { WithingsApi } from './lib/api';
 import { DataType } from './lib/api.types';
 
+type AirQualityLevel = { level: number, threshold: number, label: string };
+type Config = { name: string, email: string, password: string, mac: string, levels?: number[] };
 type Homebridge = {
 	hap: typeof Hap;
 	registerAccessory(pluginName: string, accessoryName: string, constructor: any, configurationRequestHandler?: any): void;
@@ -13,7 +15,13 @@ let Service: typeof Hap.Service;
 let Characteristic: typeof Hap.Characteristic;
 
 const DEFAULT_BATTERY_LOW_LEVEL = 10;
-const DEFAULT_CO_THRESHOLD = 1000;
+const DEFAULT_AIR_QUALITY_LEVELS: AirQualityLevel[] = [
+	{ level: Hap.Characteristic.AirQuality.EXCELLENT, threshold: 350, label: 'Excellent' },
+	{ level: Hap.Characteristic.AirQuality.GOOD, threshold: 1000, label: 'Good' },
+	{ level: Hap.Characteristic.AirQuality.FAIR, threshold: 2500, label: 'Fair' },
+	{ level: Hap.Characteristic.AirQuality.INFERIOR, threshold: 5000, label: 'Inferior' },
+	{ level: Hap.Characteristic.AirQuality.POOR, threshold: Number.MAX_SAFE_INTEGER, label: 'Poor' },
+];
 
 export default function (homebridge: Homebridge) {
 	Service = homebridge.hap.Service;
@@ -25,19 +33,27 @@ export default function (homebridge: Homebridge) {
 class WithingsScale {
 	private readonly api: WithingsApi;
 	private readonly name = this.config.name;
-	private readonly coThreshold = this.config.coThreshold && parseInt(this.config.coThreshold, 10) || DEFAULT_CO_THRESHOLD;
+	private readonly levels: AirQualityLevel[];
 
 	readonly informationService = new Service.AccessoryInformation('', '');
 	readonly batteryService = new Service.BatteryService('', '');
-	readonly carbonDioxideService = new Service.CarbonDioxideSensor('', '');
+	readonly airQualityService = new Service.AirQualitySensor('', '');
 	readonly temperatureService = new Service.TemperatureSensor('', '');
 
 	constructor(
 		private readonly log: any,
-		private readonly config: Record<string, string>,
+		private readonly config: Config,
 	) {
 		this.api = new WithingsApi(config.email, config.password, config.mac);
 		this.api.on('error', ({ message, error }) => this.log.warn(message, '/', error.message || error));
+
+		if (!config.levels || config.levels.length !== DEFAULT_AIR_QUALITY_LEVELS.length - 1) {
+			this.levels = DEFAULT_AIR_QUALITY_LEVELS;
+		} else {
+			this.levels = DEFAULT_AIR_QUALITY_LEVELS.map((level, index) => {
+				return { ...level, threshold: config.levels[index] || level.threshold };
+			});
+		}
 
 		this.init();
 	}
@@ -49,24 +65,21 @@ class WithingsScale {
 		this.initServiceEvents(
 			'battery',
 			this.batteryService.getCharacteristic(Characteristic.BatteryLevel),
-			() => this.api.getBatteryLevel(),
-			(value) => this.setBatteryLevel(value),
+			() => this.updateBatteryLevel(),
 		);
 
-		this.carbonDioxideService.setCharacteristic(Characteristic.Name, 'CO² Level');
+		this.airQualityService.setCharacteristic(Characteristic.Name, 'Air Quality');
 		this.initServiceEvents(
 			'carbondioxide',
-			this.carbonDioxideService.getCharacteristic(Characteristic.CarbonDioxideLevel),
-			() => this.api.getCarbonDioxide(),
-			(value) => this.setCarbonDioxideLevel(value),
+			this.airQualityService.getCharacteristic(Characteristic.AirQuality),
+			() => this.updateAirQuality(),
 		);
 
 		this.temperatureService.setCharacteristic(Characteristic.Name, 'Temperature');
 		this.initServiceEvents(
 			'temperature',
 			this.temperatureService.getCharacteristic(Characteristic.CurrentTemperature),
-			() => this.api.getTemperature(),
-			(value) => this.setTemperature(value),
+			() => this.updateTemperature(),
 		);
 	}
 
@@ -83,7 +96,7 @@ class WithingsScale {
 			this.informationService,
 			this.batteryService,
 			this.temperatureService,
-			this.carbonDioxideService,
+			this.airQualityService,
 		];
 	}
 
@@ -95,37 +108,46 @@ class WithingsScale {
 	private async initServiceEvents(
 		type: DataType,
 		characteristic: Hap.Characteristic,
-		queryFn: () => number,
-		updateFn: (value: number) => void,
+		updateFn: () => Hap.CharacteristicValue,
 	) {
-		this.api.on(type, (value) => updateFn(value));
+		this.api.on(type, () => updateFn());
 		characteristic.on('get' as Hap.CharacteristicEventTypes, async (cb: Hap.NodeCallback<Hap.CharacteristicValue>) => {
-			const value = queryFn();
-			updateFn(value);
+			const value = updateFn();
 			cb(null, value);
 		});
 	}
 
-	private setBatteryLevel(value: number) {
+	private updateBatteryLevel() {
+		const value = this.api.getBatteryLevel();
 		this.log.debug(`[Battery Level] ${value}%`);
 		this.batteryService
 			.setCharacteristic(Characteristic.BatteryLevel, value)
 			.setCharacteristic(Characteristic.StatusLowBattery, value < DEFAULT_BATTERY_LOW_LEVEL ? 1 : 0)
 		;
+
+		return value;
 	}
 
-	private setCarbonDioxideLevel(value: number) {
-		this.log.debug(`[Carbon Dioxide Level] ${value}ppm`);
-		this.carbonDioxideService
-			.setCharacteristic(Characteristic.CarbonDioxideDetected, value >= this.coThreshold ? 1 : 0)
+	private updateAirQuality() {
+		const value = this.api.getCarbonDioxide();
+		const { label, level } = this.levels.find(({ threshold }) => value <= threshold);
+
+		this.log.debug(`[Air Quality] ${label} (${value}ppm)`);
+		this.airQualityService
+			.setCharacteristic(Characteristic.AirQuality, level)
 			.setCharacteristic(Characteristic.CarbonDioxideLevel, value)
 		;
+
+		return level;
 	}
 
-	private setTemperature(value: number) {
+	private updateTemperature() {
+		const value = this.api.getTemperature();
 		this.log.debug(`[Temperature] ${value}°C`);
 		this.temperatureService
 			.setCharacteristic(Characteristic.CurrentTemperature, value)
 		;
+
+		return value;
 	}
 }
