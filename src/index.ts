@@ -16,11 +16,11 @@ let Characteristic: typeof Hap.Characteristic;
 
 const DEFAULT_BATTERY_LOW_LEVEL = 10;
 const DEFAULT_AIR_QUALITY_LEVELS: AirQualityLevel[] = [
-	{ level: Hap.Characteristic.AirQuality.EXCELLENT, threshold: 350, label: 'Excellent' },
-	{ level: Hap.Characteristic.AirQuality.GOOD, threshold: 1000, label: 'Good' },
-	{ level: Hap.Characteristic.AirQuality.FAIR, threshold: 2500, label: 'Fair' },
-	{ level: Hap.Characteristic.AirQuality.INFERIOR, threshold: 5000, label: 'Inferior' },
-	{ level: Hap.Characteristic.AirQuality.POOR, threshold: Number.MAX_SAFE_INTEGER, label: 'Poor' },
+	{ level: 1, threshold: 350, label: 'Excellent' },
+	{ level: 2, threshold: 1000, label: 'Good' },
+	{ level: 3, threshold: 2500, label: 'Fair' },
+	{ level: 4, threshold: 5000, label: 'Inferior' },
+	{ level: 5, threshold: Number.MAX_SAFE_INTEGER, label: 'Poor' },
 ];
 
 export default function (homebridge: Homebridge) {
