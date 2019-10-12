@@ -35,4 +35,5 @@ export type MeasureApiResponse = ApiResponse & {
 	},
 };
 
-export type Data = 'carbondioxide' | 'device' | 'temperature';
+export type DataType = 'battery' | 'carbondioxide' | 'temperature';
+export type EventType = DataType | 'error';

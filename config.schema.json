@@ -25,7 +25,7 @@
       },
       "mac": {
         "title": "MAC address",
-        "description": "The MAC address of your smart sale. It can be found where the batteries are located. Please enter this info without any separators.",
+        "description": "The MAC address of your smart scale. It can be found where the batteries are located. Please enter this info without any separators.",
         "type": "string",
         "pattern": "^[a-fA-F0-9]{12}$",
         "maxLength": 12,

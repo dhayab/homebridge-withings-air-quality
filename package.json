@@ -22,7 +22,8 @@
     "dev": "concurrently --kill-others npm:dev:parcel npm:dev:nodemon",
     "dev:parcel": "parcel src/*.ts --target node --no-source-maps",
     "dev:nodemon": "nodemon dist/index.ts",
-    "build": "parcel build src/*.ts --target node --no-source-maps"
+    "build": "parcel build src/*.ts --target node --no-source-maps",
+    "lint": "tslint src/*.ts --format stylish"
   },
   "keywords": [
     "homebridge-plugin",

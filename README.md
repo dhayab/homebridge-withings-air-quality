@@ -20,7 +20,7 @@ The plugin also requires the MAC address of the smart scale. It can be found whe
 
 Here is a sample config (you can view [config.sample.json](./config.sample.json) for more details):
 
-```json
+```js
 {
   "accessories": [
     {

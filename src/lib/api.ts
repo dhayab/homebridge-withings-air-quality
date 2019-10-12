@@ -1,6 +1,8 @@
 import superagent from 'superagent';
 
-import { ApiResponse, Data, Device, DeviceApiResponse, MeasureApiResponse } from './api.types';
+import {
+	ApiResponse, DataType, Device, DeviceApiResponse, EventType, MeasureApiResponse,
+} from './api.types';
 
 enum Api {
 	Connect = 'https://account.withings.com/connectionuser/account_login',
@@ -15,41 +17,75 @@ export enum Measure {
 
 const agent = superagent.agent();
 
-const TICK_INTERVAL = 5 * 60 * 1000; // tslint:disable-line:no-magic-numbers
+const TICK_INTERVAL = 15 * 60 * 1000; // tslint:disable-line:no-magic-numbers
 
 export class WithingsApi {
 	private device: Device;
-	private subscribers: Array<{ type: Data, callback: (data: any) => void }> = [];
-	private tick: NodeJS.Timeout;
+	private battery: number;
+	private carbondioxide: MeasureApiResponse['body']['series'][0]['data'][0];
+	private temperature: MeasureApiResponse['body']['series'][0]['data'][0];
+
+	private subscribers: Array<{ type: EventType, callback: (data: any) => void }> = [];
+	private timer: NodeJS.Timeout;
 
 	constructor(
 		private readonly email: string,
 		private readonly password: string,
 		private readonly mac: string,
-	) {}
+	) { }
 
-	async connect() {
-		await this.authenticate();
-
-		if (!this.tick) {
-			this.tick = setInterval(() => {
-				Promise.all([
-					this.authenticate(),
-					this.getDeviceInfo(),
-					this.getMeasure(Measure.CarbonDioxide),
-					this.getMeasure(Measure.Temperature),
-				]).then(([_, device, co2, temperature]) => {
-					this.emit<Device>('device', device);
-					this.emit<number>('carbondioxide', co2);
-					this.emit<number>('temperature', temperature);
-				});
-			}, TICK_INTERVAL);
+	async init() {
+		if (this.timer) {
+			return;
 		}
 
-		return await this.getDeviceInfo();
+		this.timer = setInterval(() => this.tick(), TICK_INTERVAL);
+		await this.tick();
 	}
 
-	async getDeviceInfo() {
+	getBatteryLevel() {
+		return this.battery;
+	}
+
+	getDeviceInfo() {
+		return this.device;
+	}
+
+	getCarbonDioxide() {
+		return this.carbondioxide.value;
+	}
+
+	getTemperature() {
+		return this.temperature.value;
+	}
+
+	on(type: DataType, callback: (data: number) => void): void;
+	on(type: 'error', callback: (data: { message: string, error: Error }) => void): void;
+	on(type: EventType, callback: (data: any) => void) {
+		this.subscribers.push({ type, callback });
+	}
+
+	private async connect() {
+		const query = await agent.post(Api.Connect).field('email', this.email).field('password', this.password);
+		const error = (query.text.replace(/[\n|\r|\t]/g, '').match(/<div class="alert alert-danger"><li>(.+?)<\/li><\/div>/) || [])[1];
+
+		if (error) {
+			throw new Error(`Connection failed (${error})`);
+		}
+	}
+
+	private emit<T>(type: EventType, value: T) {
+		this.subscribers
+			.filter((subscriber) => subscriber.type === type)
+			.forEach(({ callback }) => callback(value))
+			;
+	}
+
+	private emitError(message: string, error: any) {
+		this.emit<{ message: string, error: any }>('error', { message, error });
+	}
+
+	private async fetchDeviceInfo() {
 		try {
 			const query = await agent
 				.post(Api.Devices)
@@ -75,7 +111,7 @@ export class WithingsApi {
 		}
 	}
 
-	async getMeasure(type: Measure) {
+	private async fetchMeasure(type: Measure) {
 		try {
 			const query = await agent
 				.post(Api.Measure)
@@ -85,7 +121,7 @@ export class WithingsApi {
 			const data = JSON.parse(query.text) as ApiResponse;
 			if (data.status === 0) {
 				const measure = (data as MeasureApiResponse).body.series[0].data[0];
-				return measure.value;
+				return measure;
 			} else {
 				throw data.error;
 			}
@@ -94,25 +130,44 @@ export class WithingsApi {
 		}
 	}
 
-	on(type: 'carbondioxide' | 'temperature', callback: (data: number) => void): void;
-	on(type: 'device', callback: (data: Device) => void): void;
-	on(type: Data, callback: (data: any) => void) {
-		this.subscribers.push({ type, callback });
-	}
-
-	private async authenticate() {
-		const query = await agent.post(Api.Connect).field('email', this.email).field('password', this.password);
-		const error = (query.text.replace(/[\n|\r|\t]/g, '').match(/<div class="alert alert-danger"><li>(.+?)<\/li><\/div>/) || [])[1];
-
-		if (error) {
-			throw new Error(`Connection failed (${error})`);
+	// tslint:disable-next-line:cyclomatic-complexity
+	private async tick() {
+		// TODO: Handle retries on connect or fetch errors
+		if (!this.device) {
+			try {
+				await this.connect();
+			} catch (error) {
+				this.emitError('Could not connect', error);
+				return;
+			}
 		}
-	}
 
-	private emit<T>(type: Data, value: T) {
-		this.subscribers
-			.filter((subscriber) => subscriber.type === type)
-			.forEach(({ callback }) => callback(value))
-		;
+		try {
+			const device = await this.fetchDeviceInfo();
+			this.device = device;
+
+			const battery = device.deviceproperties.batterylvl;
+			(!this.battery || this.battery !== battery) && this.emit('battery', this.battery);
+			this.battery = device.deviceproperties.batterylvl;
+		} catch (error) {
+			this.emitError('Could not fetch device details', error);
+		}
+
+		try {
+			const carbondioxide = await this.fetchMeasure(Measure.CarbonDioxide);
+			(!this.carbondioxide || this.carbondioxide.date !== carbondioxide.date) && this.emit('carbondioxide', carbondioxide.value);
+			this.carbondioxide = carbondioxide;
+		} catch (error) {
+			this.emitError('Could not fetch carbon dioxide level', error);
+			return;
+		}
+
+		try {
+			const temperature = await this.fetchMeasure(Measure.Temperature);
+			(!this.temperature || this.temperature.date !== temperature.date) && this.emit('temperature', temperature.value);
+			this.temperature = temperature;
+		} catch (error) {
+			this.emitError('Could not fetch temperature', error);
+		}
 	}
 }
