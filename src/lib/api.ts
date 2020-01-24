@@ -17,6 +17,7 @@ export enum Measure {
 
 const agent = superagent.agent();
 
+const INVALID_PARAMS_ERROR = 'Invalid Params';
 const TICK_INTERVAL = 15 * 60 * 1000; // tslint:disable-line:no-magic-numbers
 
 export class WithingsApi {
@@ -130,9 +131,12 @@ export class WithingsApi {
 		}
 	}
 
+	private async reset() {
+		this.device = null;
+	}
+
 	// tslint:disable-next-line:cyclomatic-complexity
 	private async tick() {
-		// TODO: Handle retries on connect or fetch errors
 		if (!this.device) {
 			try {
 				await this.connect();
@@ -149,25 +153,21 @@ export class WithingsApi {
 			const battery = device.deviceproperties.batterylvl;
 			(!this.battery || this.battery !== battery) && this.emit('battery', this.battery);
 			this.battery = device.deviceproperties.batterylvl;
-		} catch (error) {
-			this.emitError('Could not fetch device details', error);
-		}
 
-		try {
 			const carbondioxide = await this.fetchMeasure(Measure.CarbonDioxide);
 			(!this.carbondioxide || this.carbondioxide.date !== carbondioxide.date) && this.emit('carbondioxide', carbondioxide.value);
 			this.carbondioxide = carbondioxide;
-		} catch (error) {
-			this.emitError('Could not fetch carbon dioxide level', error);
-			return;
-		}
 
-		try {
 			const temperature = await this.fetchMeasure(Measure.Temperature);
 			(!this.temperature || this.temperature.date !== temperature.date) && this.emit('temperature', temperature.value);
 			this.temperature = temperature;
 		} catch (error) {
-			this.emitError('Could not fetch temperature', error);
+			if (error === INVALID_PARAMS_ERROR) {
+				this.emitError('Session expired. Will reconnect on next tick.', error);
+				this.reset();
+			} else {
+				this.emitError('Could not fetch data from API', error);
+			}
 		}
 	}
 }
