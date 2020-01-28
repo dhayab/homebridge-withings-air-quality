@@ -151,8 +151,8 @@ export class WithingsApi {
 			this.device = device;
 
 			const battery = device.deviceproperties.batterylvl;
-			(!this.battery || this.battery !== battery) && this.emit('battery', this.battery);
-			this.battery = device.deviceproperties.batterylvl;
+			(!this.battery || this.battery !== battery) && this.emit('battery', battery);
+			this.battery = battery;
 
 			const carbondioxide = await this.fetchMeasure(Measure.CarbonDioxide);
 			(!this.carbondioxide || this.carbondioxide.date !== carbondioxide.date) && this.emit('carbondioxide', carbondioxide.value);
