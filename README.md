@@ -28,7 +28,7 @@ Here is a sample config (you can view [config.sample.json](./config.sample.json)
       "name": "Bathroom scale",
       "email": "my.withings@email.com",
       "password": "myWithingsPassword",
-      "mac": "0ab2c3d4e5f6", // Do not add separators
+      "mac": "0a:b2:c3:d4:e5:f6",
       "levels": [
         350,  // Excellent
         1000, // Good

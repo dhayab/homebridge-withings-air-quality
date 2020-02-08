@@ -96,7 +96,7 @@ export class WithingsApi {
 			const data = JSON.parse(query.text) as ApiResponse;
 			if (data.status === 0) {
 				this.device = (data as DeviceApiResponse).body.associations
-					.find(({ deviceproperties }) => deviceproperties.macaddress.replace(/:/g, '') === this.mac)
+					.find(({ deviceproperties }) => deviceproperties.macaddress.toUpperCase() === this.mac)
 				;
 
 				if (this.device) {

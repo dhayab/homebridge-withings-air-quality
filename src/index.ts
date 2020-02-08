@@ -44,7 +44,7 @@ class WithingsScale {
 		private readonly log: any,
 		private readonly config: Config,
 	) {
-		this.api = new WithingsApi(config.email, config.password, config.mac);
+		this.api = new WithingsApi(config.email, config.password, this.formattedMacAddress);
 		this.api.on('error', ({ message, error }) => this.log.warn(message, '/', error.message || error));
 
 		if (!config.levels || config.levels.length !== DEFAULT_AIR_QUALITY_LEVELS.length - 1) {
@@ -88,7 +88,7 @@ class WithingsScale {
 			.setCharacteristic(Characteristic.Name, this.name)
 			.setCharacteristic(Characteristic.Manufacturer, 'Withings')
 			.setCharacteristic(Characteristic.Model, 'Smart Body Analyzer')
-			.setCharacteristic(Characteristic.SerialNumber, this.config.mac.replace(/(..)/g, ':$1').slice(1).toUpperCase())
+			.setCharacteristic(Characteristic.SerialNumber, this.formattedMacAddress)
 			.setCharacteristic(Characteristic.FirmwareRevision, pkg.version)
 		;
 
@@ -103,6 +103,10 @@ class WithingsScale {
 	identify(callback: () => void) {
 		this.log('Identify requested!');
 		callback();
+	}
+
+	private get formattedMacAddress() {
+		return this.config.mac.replace(/\W/g, '').match(/\w{2}/g).join(':').toUpperCase();
 	}
 
 	private async initServiceEvents(
