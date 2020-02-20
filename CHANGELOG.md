@@ -1,3 +1,13 @@
+## [0.1.3](https://github.com/dhayab/homebridge-withings-air-quality/compare/v0.1.2...v0.1.3) (2020-02-20)
+
+
+### Bug Fixes
+
+* add required data to withings login request ([d567a44](https://github.com/dhayab/homebridge-withings-air-quality/commit/d567a44064930257b9d3e78c90f7617d7839f970)), closes [#3](https://github.com/dhayab/homebridge-withings-air-quality/issues/3)
+* send right battery information on first tick ([4d62965](https://github.com/dhayab/homebridge-withings-air-quality/commit/4d6296591ac09fb61b7f48912e42a4066fa2af1a))
+
+
+
 ## [0.1.2](https://github.com/dhayab/homebridge-withings-air-quality/compare/v0.1.1...v0.1.2) (2020-01-24)
 
 

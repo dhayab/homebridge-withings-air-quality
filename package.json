@@ -1,6 +1,6 @@
 {
   "name": "homebridge-withings-air-quality",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Homebridge plugin to expose air quality data from the Withings WS-50 Smart Body Analyzer",
   "repository": {
     "type": "git",
