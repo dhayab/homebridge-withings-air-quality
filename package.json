@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "start": "npm run -s build && npm run -s start:homebridge",
-    "start:homebridge": "homebridge -D -P ./ -U ./",
+    "start:homebridge": "homebridge -D -I -P ./ -U ./",
     "dev": "concurrently --kill-others npm:dev:parcel npm:dev:nodemon",
     "dev:parcel": "parcel src/*.ts --target node --no-source-maps",
     "dev:nodemon": "nodemon dist/index.ts",

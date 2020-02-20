@@ -67,7 +67,10 @@ export class WithingsApi {
 	}
 
 	private async connect() {
-		const query = await agent.post(Api.Connect).field('email', this.email).field('password', this.password);
+		const query = await agent.post(Api.Connect)
+			.field('email', this.email).field('password', this.password)
+			.field('use_2fa', '').field('is_admin', 'f')
+		;
 		const error = (query.text.replace(/[\n|\r|\t]/g, '').match(/<div class="alert alert-danger"><li>(.+?)<\/li><\/div>/) || [])[1];
 
 		if (error) {
