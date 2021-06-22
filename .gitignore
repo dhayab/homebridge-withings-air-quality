@@ -8,4 +8,5 @@ persist
 # Files
 .env*
 .uix-secrets
+auth.json
 config.json
