@@ -1,3 +1,5 @@
+> ℹ️ Please note that his plugin is not actively maintained anymore.
+
 # homebridge-withings-air-quality
 
 This plugin retrieves carbon dioxide and temperature levels from a Withings Smart Body Analyzer smart scale and exposes them as HomeKit sensors with [Homebridge](https://github.com/nfarina/homebridge).

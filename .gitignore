@@ -7,4 +7,5 @@ persist
 
 # Files
 .env*
+.uix-secrets
 config.json

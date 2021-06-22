@@ -5,7 +5,7 @@ import {
 } from './api.types';
 
 enum Api {
-	Connect = 'https://account.withings.com/connectionuser/account_login',
+	Connect = 'https://account.withings.com/connectionwou/account_login',
 	Devices = 'https://scalews.withings.com/cgi-bin/association',
 	Measure = 'https://scalews.withings.com/cgi-bin/v2/measure',
 }
@@ -69,7 +69,7 @@ export class WithingsApi {
 	private async connect() {
 		const query = await agent.post(Api.Connect)
 			.field('email', this.email).field('password', this.password)
-			.field('use_2fa', '').field('is_admin', 'f')
+			.field('r', 'https://healthmate.withings.com/').field('is_admin', 'f')
 		;
 		const error = (query.text.replace(/[\n|\r|\t]/g, '').match(/<div class="alert alert-danger"><li>(.+?)<\/li><\/div>/) || [])[1];
 
