@@ -1,3 +1,12 @@
+## [0.1.4](https://github.com/dhayab/homebridge-withings-air-quality/compare/v0.1.3...v0.1.4) (2021-06-22)
+
+
+### Bug Fixes
+
+* update connection url ([4ae0418](https://github.com/dhayab/homebridge-withings-air-quality/commit/4ae04183821837d2e28ae4f87eb4eca846b11d9c))
+
+
+
 ## [0.1.3](https://github.com/dhayab/homebridge-withings-air-quality/compare/v0.1.2...v0.1.3) (2020-02-20)
 
 
